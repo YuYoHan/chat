@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>채팅방 목록</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+        }
+
+        .chatroom-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-custom {
+            background-color: #00b74c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="chatroom-container">
+    <h3 class="text-center">채팅방 목록</h3>
+    <form id="create-room-form">
+        <div class="input-group mb-3">
+            <input type="text" id="roomName" class="form-control" placeholder="채팅방 이름" required>
+            <button class="btn btn-custom" type="submit">채팅방 만들기</button>
+        </div>
+    </form>
+    <ul id="chatroom-list" class="list-group mt-3">
+        <!-- 채팅방 리스트가 여기에 추가됩니다 -->
+    </ul>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    console.log(localStorage.getItem("accessToken"))
+    // 채팅방 생성 및 리스트 불러오기
+    document.getElementById("create-room-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const roomName = document.getElementById("roomName").value;
+
+        $.ajax({
+            url: '/api/chat/room',
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('accessToken') // JWT 토큰 추가
+            },
+            data: { name: roomName },
+            success: function (data) {
+                console.log("Response data:", data); // 응답 데이터 확인
+                console.log("room id : " + data.roomId);
+                console.log("room name : " + data.name);
+                // 채팅방 생성 성공 후 목록에 추가
+                addRoomToList(data.roomId, data.name); // 생성된 채팅방 ID와 이름을 추가
+                $('#roomName').val(''); // 입력 필드 비우기
+            },
+            error: function (xhr, status, error) {
+                console.error("Chat room creation failed. Error:", error);
+                alert("채팅방 생성 실패: " + error); // 오류 처리
+            }
+        });
+    });
+
+    function addRoomToList(roomId, roomName) {
+        const chatroomList = document.getElementById("chatroom-list");
+        const listItem = document.createElement("li");
+        listItem.className = "list-group-item d-flex justify-content-between align-items-center";
+        listItem.textContent = roomName;
+
+        const enterButton = document.createElement("button");
+        enterButton.className = "btn btn-outline-primary btn-sm";
+        enterButton.textContent = "입장";
+        enterButton.onclick = function () {
+            window.location.href = `/chat-room?roomId=${roomId}`;
+        };
+
+        listItem.appendChild(enterButton);
+        chatroomList.appendChild(listItem);
+    }
+
+    // 페이지 로드 시 채팅방 리스트를 불러오기
+    fetch("/api/chat/rooms", {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("accessToken") // 토큰 추가
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data && Array.isArray(data)) {
+                data.forEach(room => {
+                    addRoomToList(room.id, room.name);
+                });
+            } else {
+                console.error("Unexpected response format:", data);
+            }
+        })
+        .catch(error => console.error("Error:", error));
+</script>
+</body>
+</html>

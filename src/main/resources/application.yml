@@ -1,0 +1,72 @@
+# 서버 포트 설정
+server:
+  port: 8080
+
+# H2 데이터베이스 설정
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE  # 메모리 기반 H2 데이터베이스
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  thymeleaf:
+    cache: false  # 개발 중에는 캐싱 비활성화
+    mode: HTML    # 타임리프 모드 설정
+    encoding: UTF-8
+    prefix: classpath:/templates/  # 타임리프 템플릿 위치
+    suffix: .html                  # 템플릿 파일 확장자
+
+  h2:
+    console:
+      enabled: true  # H2 콘솔 활성화
+      path: /h2-console  # H2 콘솔 접속 경로 설정
+
+# MongoDB 설정
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/study  # MongoDB URI
+      database: study  # 사용할 데이터베이스 이름
+    # Redis 설정
+    redis:
+      host: localhost  # Redis 서버 호스트
+      port: 6379       # Redis 서버 포트
+      # optional: password: your_redis_password  # Redis 비밀번호 설정 (필요 시)
+
+# JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발 중 'create' 또는 'update' 사용 가능
+    show-sql: true  # SQL 쿼리 로깅 활성화
+    properties:
+      hibernate:
+        format_sql: true  # 포맷된 SQL 출력
+
+
+
+# WebSocket 및 STOMP 설정
+websocket:
+  endpoint: /ws  # WebSocket 엔드포인트
+  stomp:
+    endpoint: /stomp  # STOMP 엔드포인트
+    allowed-origins: "*"  # Cross-Origin 요청 허용
+
+# SSE 설정
+sse:
+  timeout: 3600  # 서버에서 SSE 연결을 유지하는 시간 (초 단위)
+
+
+# JWT 설정
+jwt:
+  refresh:
+    expiration: 864000
+  access:
+    expiration: 3600
+  secret_key: adsadasdsaiocvkcvcxovcx90uewqwd3dcxjvcxcoiuvxcoivuxcdwasoodsdusaczx  # Base64로 인코딩된 비밀 키
+  expiration: 86400000  # 토큰 만료 시간 (밀리초 단위, 예: 1일)
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework: DEBUG  # Spring 로그 레벨 설정 (개발 중 INFO 또는 DEBUG 사용 가능)

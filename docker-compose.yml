@@ -1,0 +1,44 @@
+services:
+  # H2 데이터베이스
+  h2:
+    image: oscarfonts/h2
+    container_name: h2-database
+    environment:
+      - H2_OPTIONS=-ifNotExists;DB_CLOSE_ON_EXIT=FALSE
+    ports:
+      - "9092:9092"
+      - "8082:8082"  # H2 콘솔에 접속할 포트
+
+  # MongoDB 설정
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"  # MongoDB 기본 포트
+
+  # Redis 설정
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"  # Redis 기본 포트
+    environment:
+      PASSWORD: 1234
+
+  # Spring Boot 애플리케이션
+  app:
+    build:
+      context: .  # Dockerfile이 있는 디렉토리
+      dockerfile: /Dockerfile
+    container_name: spring-boot-app
+    ports:
+      - "8080:8080"  # Spring Boot 애플리케이션 포트
+    environment:
+      SPRING_DATASOURCE_URL : jdbc:h2:tcp://h2-database:9092/mem:testdb
+      SPRING_DATA_MONGODB_URI : mongodb://mongodb:27017/mydatabase
+      SPRING_REDIS_HOST : redis
+      JWT_SECRET_KEY : adsadasdsaiocvkcvcxovcx90uewqwd3dcxjvcxcoiuvxcoivuxcdwasoodusaczx  # 환경 변수로 JWT 비밀 키 전달
+    depends_on:
+      - h2
+      - mongodb
+      - redis
