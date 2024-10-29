@@ -23,6 +23,7 @@ public class ChatMessageDocument {
     private MessageType type;
     private String roomId;
     private String sender;
+    @Setter
     private String message;
     private LocalDateTime timestamp; // 메시지 생성 시간 저장
 

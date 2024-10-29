@@ -66,6 +66,8 @@
 </div>
 
 <script th:inline="javascript">
+    const accessToken = localStorage.getItem('accessToken'); // 토큰을 로컬 스토리지에서 가져옵니다.
+
     function getRoomIdFromUrl() {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('roomId'); // URL에서 roomId를 가져옵니다.
@@ -73,16 +75,14 @@
 
     $(document).ready(function () {
         const username = localStorage.getItem("nickName"); // 사용자 이름을 로컬 스토리지에서 가져옵니다.
-        const socket = new SockJS("http://localhost:8080/ws/chat"); // SockJS를 통해 WebSocket 연결을 생성합니다.
+        const socket = new SockJS(`/ws/chat?token=${accessToken}`);
         const stompClient = Stomp.over(socket); // STOMP 클라이언트를 생성합니다.
         const roomId = getRoomIdFromUrl(); // 현재 채팅방의 ID를 가져옵니다.
         console.log(roomId)
-        console.log("accessToken : " + localStorage.getItem("accessToken"))
-        const accessToken = localStorage.getItem('accessToken'); // 토큰을 로컬 스토리지에서 가져옵니다.
 
 
         // 채팅 내역 불러오기 (MongoDB에서 가져옴)
-        $.get(`/room/${roomId}/messages`, function (messages) {
+        $.get(`/api/chat/${roomId}/messages`, function (messages) {
             messages.forEach(message => onMessage(message)); // 가져온 메시지를 화면에 추가합니다.
         });
 
@@ -97,16 +97,16 @@
                 console.log("Connected: " + frame);
 
                 // 방 주제 구독
-                stompClient.subscribe(`/topic/chat/${roomId}`, function (msg) {
+                stompClient.subscribe(`/topic/${roomId}`, function (msg) {
                     onMessage(JSON.parse(msg.body)); // 메시지를 수신하여 처리합니다.
                 });
 
                 // 사용자 입장 메시지 전송
-                stompClient.send(`/api/chat/sendMessage`, {Authorization: `Bearer ${accessToken}`}, JSON.stringify({
+                stompClient.send(`/send/${roomId}`, {Authorization: `Bearer ${accessToken}`}, JSON.stringify({
                     sender: username,
                     message: `${username}님이 방에 입장하셨습니다.`,
                     roomId: roomId, // roomId 포함
-                    type: "TALK"
+                    type: "ENTER"
                 }));
             },
             function (error) {
@@ -124,28 +124,24 @@
             const msg = $("#msg").val(); // 입력된 메시지를 가져옵니다.
             if (msg.trim() === "") return; // 메시지가 비어 있으면 전송하지 않음.
             console.log("Sending message:", msg);
-            stompClient.send(`/api/chat/sendMessage`, {}, JSON.stringify({
+            stompClient.send(`/send/${roomId}`, {Authorization: `Bearer ${accessToken}`}, JSON.stringify({
                 sender: username,
-                message: msg, // 'message' 필드로 수정
+                message: msg,
                 roomId: roomId,
-                type: "TALK" // 필요한 경우 type도 추가
+                type: "TALK"
             }));
             $("#msg").val(''); // 입력 필드 비우기
         }
 
         function onMessage(data) {
-            const sessionId = data.sender; // 메시지를 보낸 사용자 ID
-            const message = data.content; // 메시지 내용
-            const time = new Date().toLocaleTimeString(); // 현재 시간
-
-            // 사용자에 따라 메시지 스타일 결정
-            const messageClass = sessionId === username ? 'my-message' : 'other-message';
-            const displayMessage = `<div class='message ${messageClass}'>
-                                        <b>${sessionId}</b>: ${message}
-                                        <div class='time'>${time}</div>
-                                    </div>`;
-            $("#msgArea").append(displayMessage); // 메시지를 화면에 추가
-            $("#msgArea").scrollTop($("#msgArea")[0].scrollHeight); // 메시지 영역을 스크롤
+            const { type, sender, message } = data;
+            let displayMessage;
+            if (type === "ENTER") {
+                displayMessage = `<div class='info-message'>${sender} has joined the chat</div>`;
+            } else if (type === "TALK") {
+                displayMessage = `<div class='message'>${sender}: ${message}</div>`;
+            }
+            $("#msgArea").append(displayMessage);
         }
     });
 </script>

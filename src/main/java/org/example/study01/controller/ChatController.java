@@ -30,7 +30,7 @@ public class ChatController {
     }
 
     // 채팅방의 모든 메시지 조회
-    @GetMapping("/room/{roomId}/messages")
+    @GetMapping("/{roomId}/messages")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public List<ChatMessage> getMessages(@PathVariable String roomId) {
         return chatService.getMessagesByRoomId(roomId);
