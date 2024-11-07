@@ -1,13 +1,15 @@
 services:
-  # H2 데이터베이스
-  h2:
-    image: oscarfonts/h2
-    container_name: h2-database
+  # MySQL 데이터베이스 설정
+  mysql-database:
+    image: mysql:8.0
+    container_name: mysql
     environment:
-      - H2_OPTIONS=-ifNotExists;DB_CLOSE_ON_EXIT=FALSE
+      MYSQL_ROOT_PASSWORD: root_password  # MySQL root 비밀번호 설정
+      MYSQL_DATABASE: test  # 초기 데이터베이스 이름
+      MYSQL_USER: root   # 애플리케이션 사용자
+      MYSQL_PASSWORD: 1234  # 애플리케이션 사용자 비밀번호
     ports:
-      - "9092:9092"
-      - "8082:8082"  # H2 콘솔에 접속할 포트
+      - "3306:3306"  # MySQL 기본 포트
 
   # MongoDB 설정
   mongodb:
@@ -34,8 +36,10 @@ services:
     ports:
       - "8080:8080"  # Spring Boot 애플리케이션 포트
     environment:
-      SPRING_DATASOURCE_URL : jdbc:h2:tcp://h2-database:9092/mem:testdb
-      SPRING_DATA_MONGODB_URI : mongodb://mongodb:27017/mydatabase
+      SPRING_DATASOURCE_URL : jdbc:mysql://mysql-database:3306/test
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DATA_MONGODB_URI : mongodb://mongodb:27017/study
       SPRING_REDIS_HOST : redis
       JWT_SECRET_KEY : adsadasdsaiocvkcvcxovcx90uewqwd3dcxjvcxcoiuvxcoivuxcdwasoodusaczx  # 환경 변수로 JWT 비밀 키 전달
     depends_on:

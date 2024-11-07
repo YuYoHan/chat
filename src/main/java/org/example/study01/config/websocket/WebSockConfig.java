@@ -29,7 +29,7 @@ public class WebSockConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // 소켓 연결 uri이다. 소켓을 연결할 때에는 다음과 같은 통신이 이루어진다.
         registry.addEndpoint("/ws/chat")
-                .setAllowedOrigins("http://localhost:8080")
+                .setAllowedOrigins("http://localhost:5175")
                 .withSockJS(); // SockJS를 통해 연결 지원
     }
 

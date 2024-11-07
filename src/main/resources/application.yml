@@ -2,13 +2,12 @@
 server:
   port: 8080
 
-# H2 데이터베이스 설정
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE  # 메모리 기반 H2 데이터베이스
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/test  # MySQL 기반 데이터베이스 URL
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root  # MySQL 사용자 이름
+    password: 1234  # MySQL 비밀번호
 
   thymeleaf:
     cache: false  # 개발 중에는 캐싱 비활성화
@@ -17,12 +16,7 @@ spring:
     prefix: classpath:/templates/  # 타임리프 템플릿 위치
     suffix: .html                  # 템플릿 파일 확장자
 
-  h2:
-    console:
-      enabled: true  # H2 콘솔 활성화
-      path: /h2-console  # H2 콘솔 접속 경로 설정
-
-# MongoDB 설정
+  # MongoDB 설정
   data:
     mongodb:
       uri: mongodb://localhost:27017/study  # MongoDB URI
@@ -33,12 +27,13 @@ spring:
       port: 6379       # Redis 서버 포트
       # optional: password: your_redis_password  # Redis 비밀번호 설정 (필요 시)
 
-# JPA 설정
+  # JPA 설정
   jpa:
     hibernate:
       ddl-auto: update  # 개발 중 'create' 또는 'update' 사용 가능
     show-sql: true  # SQL 쿼리 로깅 활성화
     properties:
+      hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
       hibernate:
         format_sql: true  # 포맷된 SQL 출력
 
